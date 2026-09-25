@@ -96,6 +96,8 @@ impl IconState {
 fn icon_for(state: IconState) -> Option<Image<'static>> {
     const SIZE: i32 = 32;
     const SAMPLES: i32 = 3;
+    // Where the elapsed sector ends, clockwise from twelve, as in the app icon.
+    const ELAPSED: f64 = 130.0 * std::f64::consts::PI / 180.0;
     let [r, g, b] = state.colour();
 
     let centre = SIZE as f64 / 2.0;
@@ -127,8 +129,9 @@ fn icon_for(state: IconState) -> Option<Image<'static>> {
 
                     let dist = ((x - centre).powi(2) + (y - centre).powi(2)).sqrt();
                     let on_ring = (dist - ring).abs() <= stroke / 2.0;
-                    let in_quadrant = dist <= ring - stroke && y < centre && x > centre;
-                    if on_ring || in_quadrant {
+                    let angle = (x - centre).atan2(centre - y);
+                    let in_sector = dist <= ring - stroke && (0.0..=ELAPSED).contains(&angle);
+                    if on_ring || in_sector {
                         mark += 1.0;
                     }
                 }

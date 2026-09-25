@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generate the LocalTrack icon set.
 
-The mark is a clock face on a rounded tile: a ring with a filled sector for
-elapsed time, plus hands at larger sizes. Everything is rasterized with 4x
+The mark is a clock face on a rounded tile: a ring with a sector for elapsed
+time, running from twelve to the hour hand, plus hands at larger sizes. It
+matches docs/assets/logo.svg. Everything is rasterized with 4x
 supersampling so the edges stay clean without an image library.
 
 Usage: python3 scripts/generate-icons.py
@@ -15,9 +16,13 @@ import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-BRAND = (0x2E, 0x7D, 0x5B)
-BRAND_DARK = (0x24, 0x63, 0x48)
+BRAND = (0x34, 0x90, 0x6A)
+BRAND_DARK = (0x1F, 0x5A, 0x41)
 INK = (0xFF, 0xFF, 0xFF)
+MINT = (0xA7, 0xE3, 0xC4)
+MINT_ALPHA = 0.45
+# Where the hour hand points and the elapsed sector ends, clockwise from twelve.
+ELAPSED = math.radians(130)
 SS = 4  # supersampling factor
 
 
@@ -31,6 +36,12 @@ def _rounded_tile(x: float, y: float, size: float, radius: float) -> bool:
 
 def _ring(dist: float, radius: float, stroke: float) -> bool:
     return abs(dist - radius) <= stroke / 2
+
+
+def _in_sector(x: float, y: float, cx: float, cy: float) -> bool:
+    # Angle measured clockwise from twelve o'clock.
+    angle = math.atan2(x - cx, cy - y)
+    return 0 <= angle <= ELAPSED
 
 
 def _hand(px: float, py: float, cx: float, cy: float, angle: float, length: float, width: float) -> bool:
@@ -54,8 +65,8 @@ def render(size: int, background: tuple[int, int, int] | None = BRAND, hands: bo
 
     radius = size * 0.23
     cx = cy = size / 2
-    ring_radius = size * (0.30 if hands else 0.28)
-    stroke = size * (0.075 if hands else 0.11)
+    ring_radius = size * (0.293 if hands else 0.28)
+    stroke = size * (0.066 if hands else 0.11)
 
     pixels = bytearray()
     for py in range(size):
@@ -72,8 +83,8 @@ def render(size: int, background: tuple[int, int, int] | None = BRAND, hands: bo
                         base = (0, 0, 0)
                         base_a = 0.0
                     else:
-                        # Subtle vertical gradient keeps the tile from looking flat.
-                        mix = y / size
+                        # Subtle diagonal gradient keeps the tile from looking flat.
+                        mix = min(1.0, (0.35 * x + y) / (1.35 * size))
                         base = tuple(
                             int(background[i] * (1 - mix) + BRAND_DARK[i] * mix) for i in range(3)
                         )
@@ -85,16 +96,21 @@ def render(size: int, background: tuple[int, int, int] | None = BRAND, hands: bo
                     if _ring(dist, ring_radius, stroke):
                         colour, alpha = INK, 1.0
                     elif hands:
-                        # Distinct hand lengths and weights so the mark reads as
-                        # a clock rather than a tick.
-                        if _hand(x, y, cx, cy, math.radians(-90), ring_radius * 0.72, size * 0.05):
+                        # A long hand at twelve and a short one where the
+                        # elapsed sector ends, so the mark reads as a clock.
+                        hour = ELAPSED - math.pi / 2
+                        if _hand(x, y, cx, cy, math.radians(-90), size * 0.207, size * 0.051):
                             colour, alpha = INK, 1.0
-                        elif _hand(x, y, cx, cy, math.radians(0), ring_radius * 0.48, size * 0.07):
+                        elif _hand(x, y, cx, cy, hour, size * 0.155, size * 0.051):
                             colour, alpha = INK, 1.0
-                        elif dist <= size * 0.05:
+                        elif dist <= size * 0.043:
                             colour, alpha = INK, 1.0
-                    elif dist <= ring_radius - stroke and y < cy and x > cx:
-                        # A filled quadrant stands in for the hands when small.
+                        elif dist <= size * 0.238 and _in_sector(x, y, cx, cy):
+                            colour = tuple(
+                                int(base[i] * (1 - MINT_ALPHA) + MINT[i] * MINT_ALPHA) for i in range(3)
+                            )
+                    elif dist <= ring_radius - stroke and _in_sector(x, y, cx, cy):
+                        # A filled sector stands in for the hands when small.
                         colour, alpha = INK, 1.0
 
                     r_acc += colour[0] * alpha
