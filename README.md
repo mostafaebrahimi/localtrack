@@ -1,4 +1,8 @@
-# LocalTrack
+<p align="center">
+  <img src="docs/assets/banner.png" alt="LocalTrack: where did my working time go?" width="100%">
+</p>
+
+# <img src="docs/assets/logo.svg" alt="" width="36" align="top"> LocalTrack
 
 [![CI](https://github.com/mostafaebrahimi/localtrack/actions/workflows/ci.yml/badge.svg)](https://github.com/mostafaebrahimi/localtrack/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
