@@ -15,6 +15,7 @@ pub use adapter::{DesktopCapabilities, WindowAdapter, WindowSnapshot};
 pub use collector::LinuxDesktopCollector;
 pub use session::{detect_session, SessionKind};
 
+#[cfg(target_os = "linux")]
 pub(crate) fn now_ms() -> i64 {
     localtrack_core::time::now_ms()
 }

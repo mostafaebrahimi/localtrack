@@ -10,6 +10,7 @@ use localtrack_core::activity::{Observation, SystemLockObservation, WindowObserv
 use localtrack_core::time::now_ms;
 
 use crate::adapter::{DesktopCapabilities, UnsupportedAdapter, WindowAdapter, WindowSnapshot};
+#[cfg(target_os = "linux")]
 use crate::session::{desktop_environment, detect_session, SessionKind};
 
 /// Desktop collector for Linux.
