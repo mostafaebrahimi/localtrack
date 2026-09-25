@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "LocalTrack",
+  "version": "1.0.0",
+  "description": "Local-first time tracking. Sends browser activity to the LocalTrack desktop application on this computer only.",
+  "minimum_chrome_version": "116",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "LocalTrack",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["tabs", "webNavigation", "nativeMessaging", "storage", "alarms", "scripting"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'none'"
+  }
+}

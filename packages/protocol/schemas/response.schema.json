@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localtrack.local/schemas/response.schema.json",
+  "title": "Native host response",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["version", "messageId", "type", "receivedAt", "success"],
+      "properties": {
+        "version": { "type": "integer" },
+        "messageId": { "type": "string" },
+        "type": { "const": "ack" },
+        "receivedAt": { "type": "integer" },
+        "success": { "const": true },
+        "payload": {}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["version", "messageId", "type", "error"],
+      "properties": {
+        "version": { "type": "integer" },
+        "messageId": { "type": "string" },
+        "type": { "const": "error" },
+        "error": {
+          "type": "object",
+          "required": ["code", "message"],
+          "properties": {
+            "code": {
+              "enum": [
+                "UNSUPPORTED_PROTOCOL_VERSION",
+                "MALFORMED_JSON",
+                "MESSAGE_TOO_LARGE",
+                "INVALID_MESSAGE",
+                "UNKNOWN_MESSAGE_TYPE",
+                "INVALID_TIMESTAMP"
+              ]
+            },
+            "message": { "type": "string" }
+          }
+        }
+      }
+    }
+  ]
+}

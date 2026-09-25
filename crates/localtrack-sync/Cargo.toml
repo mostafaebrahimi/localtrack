@@ -1,0 +1,30 @@
+[package]
+name = "localtrack-sync"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "HTTP transport for LocalTrack employee mode"
+
+[dependencies]
+localtrack-app = { workspace = true }
+localtrack-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+
+# TLS through rustls so no system OpenSSL is required, and no cookie store:
+# the agent talks to exactly one enrolled server with a bearer token.
+reqwest = { version = "0.12", default-features = false, features = [
+    "blocking",
+    "json",
+    "rustls-tls",
+    "gzip",
+] }
+
+[dev-dependencies]
+localtrack-storage = { workspace = true }
+tempfile = { workspace = true }
+# A real socket for the transport tests: the fake transport in localtrack-app
+# proves the rules, this proves the wire.
+tiny_http = "0.12"

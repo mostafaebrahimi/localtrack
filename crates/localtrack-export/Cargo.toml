@@ -1,0 +1,19 @@
+[package]
+name = "localtrack-export"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Local XLSX and CSV export for LocalTrack"
+
+[dependencies]
+localtrack-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+csv = { workspace = true }
+rust_xlsxwriter = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

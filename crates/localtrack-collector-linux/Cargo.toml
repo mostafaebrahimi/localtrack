@@ -1,0 +1,16 @@
+[package]
+name = "localtrack-collector-linux"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Linux desktop activity collectors (X11 today, Wayland adapters later)"
+
+[dependencies]
+localtrack-core = { workspace = true }
+localtrack-collector-common = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+x11rb = { version = "0.13", features = ["screensaver", "xinput"] }

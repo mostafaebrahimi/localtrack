@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localtrack.local/schemas/envelope.schema.json",
+  "title": "LocalTrack native message envelope",
+  "type": "object",
+  "required": ["version", "messageId", "type", "sentAt"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "messageId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "type": {
+      "enum": [
+        "hello",
+        "browser.activity",
+        "browser.interaction",
+        "browser.heartbeat",
+        "clock.command",
+        "status.request"
+      ]
+    },
+    "sentAt": { "type": "integer", "minimum": 1 },
+    "payload": { "type": "object" }
+  }
+}

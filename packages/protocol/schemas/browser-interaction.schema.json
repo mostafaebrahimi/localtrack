@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localtrack.local/schemas/browser-interaction.schema.json",
+  "title": "browser.interaction payload",
+  "description": "Detailed interactions are optional and disabled by default. Values, keystrokes, clipboard content and form payloads are never part of this schema.",
+  "type": "object",
+  "required": ["interaction", "capturedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "interaction": {
+      "enum": ["navigation", "button_click", "link_click", "form_submit", "scroll_activity"]
+    },
+    "capturedAt": { "type": "integer", "minimum": 1 },
+    "element": { "type": "string", "maxLength": 32 },
+    "label": { "type": "string", "maxLength": 120 },
+    "url": { "type": "string", "maxLength": 8192 }
+  }
+}

@@ -1,0 +1,25 @@
+node_modules/
+dist/
+target/
+*.log
+.DS_Store
+.env
+.env.local
+apps/desktop/src-tauri/gen/
+apps/chrome-extension/dist/
+*.db
+*.db-wal
+*.db-shm
+localtrack-backup-*.db
+.pnpm-store/
+coverage/
+apps/chrome-extension/dist-firefox/
+
+# Editor and assistant local state
+.vscode/
+.idea/
+.claude/
+CLAUDE.md
+
+# Private working notes, not part of the published project
+/Local-First Time Tracker*.md

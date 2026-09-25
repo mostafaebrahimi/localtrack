@@ -1,0 +1,73 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/localtrack-core",
+    "crates/localtrack-storage",
+    "crates/localtrack-collector-common",
+    "crates/localtrack-collector-linux",
+    "crates/localtrack-collector-windows",
+    "crates/localtrack-export",
+    "crates/localtrack-native-host",
+    "crates/localtrack-app",
+    "crates/localtrack-sync",
+    "apps/desktop/src-tauri",
+]
+
+# The Tauri shell needs GTK 3 and WebKitGTK 4.1 development packages. Everything
+# else builds anywhere, so plain `cargo build` / `cargo test` stays usable on a
+# machine without a desktop toolchain; CI builds the app explicitly with -p.
+default-members = [
+    "crates/localtrack-core",
+    "crates/localtrack-storage",
+    "crates/localtrack-collector-common",
+    "crates/localtrack-collector-linux",
+    "crates/localtrack-collector-windows",
+    "crates/localtrack-export",
+    "crates/localtrack-native-host",
+    "crates/localtrack-app",
+    "crates/localtrack-sync",
+]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+license = "MIT"
+authors = ["LocalTrack contributors"]
+repository = "https://github.com/mostafaebrahimi/localtrack"
+homepage = "https://github.com/mostafaebrahimi/localtrack"
+rust-version = "1.77"
+
+[workspace.dependencies]
+localtrack-core = { path = "crates/localtrack-core" }
+localtrack-storage = { path = "crates/localtrack-storage" }
+localtrack-collector-common = { path = "crates/localtrack-collector-common" }
+localtrack-collector-linux = { path = "crates/localtrack-collector-linux" }
+localtrack-collector-windows = { path = "crates/localtrack-collector-windows" }
+localtrack-export = { path = "crates/localtrack-export" }
+localtrack-app = { path = "crates/localtrack-app" }
+localtrack-sync = { path = "crates/localtrack-sync" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+anyhow = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+rusqlite = { version = "0.31", features = ["bundled", "backup", "functions"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+parking_lot = "0.12"
+regex = "1"
+url = "2"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+time = { version = "0.3", features = ["macros", "formatting"] }
+csv = "1"
+rust_xlsxwriter = "0.64"
+tempfile = "3"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+opt-level = "s"
+panic = "abort"

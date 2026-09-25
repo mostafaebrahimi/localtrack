@@ -1,0 +1,1488 @@
+/*
+ * Vazirmatn (SIL OFL 1.1, vendored in assets/fonts with its licence) — the
+ * Persian face. One variable file covers every weight, and it is bundled like
+ * every other asset: no CDN, so the interface renders identically with the
+ * machine offline (spec §130).
+ */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('./assets/fonts/Vazirmatn-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* LocalTrack dashboard styles. Fonts and assets are bundled locally; nothing
+   is loaded from a CDN (spec §130).
+
+   The interface is built as an instrument rather than a dashboard: a quiet
+   housing, a ruled scale, and every measured value set in the instrument's own
+   monospaced voice. Durations, clock times, shares and counts are the content
+   here — they get the typography, and the chrome around them stays out of the
+   way. */
+
+:root {
+  /* Housing, scale, ink. */
+  --bg: #eceff1;
+  --surface: #ffffff;
+  --surface-2: #f3f5f7;
+  /* Recessed surfaces: the well a scale is printed in. */
+  --surface-inset: #e6eaee;
+  --border: #d5dbe0;
+  --hairline: rgba(16, 24, 32, 0.08);
+  --graduation: rgba(255, 255, 255, 0.55);
+  --text: #0f1519;
+  --text-muted: #5c6a75;
+
+  /* The one live signal: running, on, now. */
+  --accent: #0e7a57;
+  --accent-soft: #dff0e8;
+
+  --danger: #a3352c;
+  --warning: #8a6116;
+
+  /* Activity states. These are data, not decoration: they carry meaning in
+     the band, the legend, the donut and the stacked bars alike. */
+  --idle: #98a4ad;
+  --break: #b07c3c;
+  --untracked: #ccd3d9;
+  --browser: #2e6fa6;
+  --app: #566b7b;
+
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-data: ui-monospace, 'SF Mono', SFMono-Regular, 'Cascadia Mono', 'JetBrains Mono',
+    'Roboto Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
+  --fs-micro: 10.5px;
+  --fs-small: 12px;
+  --fs-body: 13.5px;
+  --fs-title: 15px;
+  --fs-h1: 20px;
+  --fs-display: 32px;
+
+  --radius: 8px;
+  --radius-sm: 5px;
+  /*
+   * Which way a measurement reads. Latin measurements run left to right; a
+   * Persian one ("۰۲س ۰۶د") carries its own units as strong right-to-left
+   * letters, and forcing it the other way puts the minutes before the hours.
+   */
+  --measure-dir: ltr;
+  /* Overlays float; panels do not. */
+  --shadow: 0 12px 32px rgba(12, 18, 24, 0.16);
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'],
+:root[data-theme='system'].prefers-dark {
+  --bg: #0b0f13;
+  --surface: #131a20;
+  --surface-2: #1a222a;
+  --surface-inset: #0e161c;
+  --border: #26313a;
+  --hairline: rgba(255, 255, 255, 0.07);
+  --graduation: rgba(8, 12, 16, 0.45);
+  --text: #e5eaee;
+  --text-muted: #93a1ac;
+
+  --accent: #4fd09a;
+  --accent-soft: #10281f;
+
+  --danger: #e0796f;
+  --warning: #d8ab55;
+
+  --idle: #64717d;
+  --break: #ce9a55;
+  --untracked: #2e3841;
+  --browser: #6eace6;
+  --app: #8ca0b2;
+
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  /*
+   * The page itself scrolls, rather than a container inside it. A nested
+   * scroller is repainted by the CPU on every wheel notch; the main frame gets
+   * the engine's fast path, which measured three times cheaper on a full day's
+   * dashboard.
+   */
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Every measured value shares one voice. */
+.mono,
+.clock,
+.metric .value,
+.readout-value,
+.display-time,
+td.numeric,
+th.numeric,
+.timeline-axis,
+.feed-item .time,
+.usage-time,
+.badge,
+.now-chip {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* A label names a reading; it never competes with it. */
+.label,
+.metric .label,
+.readout-label,
+.usage-title,
+th {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ----------------------------------------------------------------- controls */
+
+button {
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 550;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 6px 13px;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: var(--text-muted);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+:root[data-theme='dark'] button.primary,
+:root[data-theme='system'].prefers-dark button.primary {
+  color: #06231a;
+}
+
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  border-color: var(--accent);
+}
+
+button.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: transparent;
+}
+
+button.ghost {
+  border-color: transparent;
+  background: transparent;
+  padding: 4px 8px;
+  color: var(--text-muted);
+}
+
+button.ghost:hover:not(:disabled) {
+  color: var(--text);
+  border-color: transparent;
+  background: var(--surface-2);
+}
+
+button.ghost.small {
+  font-size: var(--fs-small);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: var(--fs-body);
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+
+/*
+ * The open dropdown is drawn by the platform, not by the page, and it takes
+ * its colours from the desktop theme: on a dark desktop, a light interface
+ * still opened a black list. Naming the scheme and the option colours keeps
+ * the menu with the interface the person chose rather than the one the
+ * machine is set to.
+ */
+select {
+  color-scheme: inherit;
+}
+
+option,
+optgroup {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------- shell */
+
+.app {
+  display: grid;
+  grid-template-columns: 224px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+  padding: 18px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Stays put while the page scrolls past it. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar .brand {
+  font-weight: 650;
+  font-size: var(--fs-title);
+  padding: 2px 10px 16px;
+  letter-spacing: -0.01em;
+}
+
+.sidebar .brand small {
+  display: block;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted);
+  letter-spacing: 0;
+  margin-top: 3px;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sidebar nav a {
+  position: relative;
+  display: block;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: var(--fs-body);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar nav a:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* The active page is marked on the rail, the way a selected channel is. */
+.sidebar nav a.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar nav a.active::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -12px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-start-end-radius: 2px;
+  border-end-end-radius: 2px;
+  background: var(--accent);
+}
+
+.sidebar .spacer {
+  flex: 1;
+}
+
+.sidebar .footer {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 10px 10px 0;
+  border-top: 1px solid var(--hairline);
+  line-height: 1.6;
+}
+
+.main {
+  padding: 22px 26px 56px;
+  min-width: 0;
+  max-width: 1400px;
+}
+
+/* Employee mode says so, on every page, always. */
+.managed-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  border-inline-start: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.managed-banner strong {
+  color: var(--text);
+}
+
+.managed-banner a {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.managed-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+
+.payload {
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  max-height: 50vh;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  font-size: var(--fs-h1);
+  margin: 0;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+}
+
+.page-header p {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-small);
+}
+
+/* -------------------------------------------------------------------- panels */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.card h2 {
+  font-size: var(--fs-title);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * The day panel: the state of the clock, the band of the day and the six
+ * readings, in one instrument rather than three stacked boxes.
+ */
+.day-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+}
+
+.day-band {
+  padding: 4px 16px 12px;
+}
+
+.state-line {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: var(--fs-title);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.state-line .muted {
+  font-weight: 400;
+  font-size: var(--fs-small);
+}
+
+.display-time {
+  font-size: var(--fs-display);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-top: 2px;
+  display: block;
+}
+
+.current-activity {
+  margin-top: 8px;
+  padding-inline-start: 16px;
+  border-inline-start: 2px solid var(--hairline);
+}
+
+.band-footnote {
+  margin-top: 10px;
+}
+
+/* The six readings, divided the way a gauge cluster is. */
+.readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.readout-item {
+  padding: 11px 16px;
+  border-inline-start: 1px solid var(--hairline);
+  min-width: 0;
+}
+
+.readout-item:first-child {
+  border-inline-start: none;
+}
+
+/* Used on its own, outside the day panel, the strip carries its own housing. */
+.readout.framed {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.readout-value {
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-top: 3px;
+}
+
+.readout-hint {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+/* The standalone metric card, still used on report pages. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric .label {
+  display: block;
+}
+
+.metric .value {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.metric .hint {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.row.between {
+  justify-content: space-between;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.task-row {
+  flex: 1 1 320px;
+  justify-content: flex-end;
+}
+
+/*
+ * The Jalali date field is a text box standing in for a native date control,
+ * so it should still measure like one. Sized in ems rather than ch: the
+ * Persian figures it holds are wider than the character the ch unit is
+ * measured from, and a ch-sized box clipped the year.
+ */
+.date-field {
+  width: 8.5em;
+  text-align: center;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.date-field.wide {
+  width: 13em;
+}
+
+.task-input {
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 340px;
+}
+
+.status-card {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.status-state {
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--idle);
+  flex: none;
+}
+
+.status-state .dot,
+.state-line .dot {
+  margin-inline-end: 2px;
+}
+
+.dot.on {
+  background: var(--accent);
+  /* Running is the only thing that glows. */
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.dot.break {
+  background: var(--break);
+}
+
+.dot.off {
+  background: var(--untracked);
+}
+
+/* -------------------------------------------------------------------- tables */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: start;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+th {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+.report-table {
+  table-layout: fixed;
+}
+
+.report-table .time-col,
+.report-table .share-col {
+  width: 84px;
+}
+
+.report-table .visits-col {
+  width: 66px;
+}
+
+.report-table .bar-col {
+  width: 20%;
+}
+
+.report-table .secondary-col {
+  width: 22%;
+}
+
+/* Identifiers are long; truncate rather than reflowing the row. */
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0;
+}
+
+tbody tr:hover {
+  background: var(--surface-2);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+td.numeric,
+th.numeric {
+  text-align: end;
+}
+
+/* Every bar is measured from the same rule, so rows compare by eye. */
+.bar-col {
+  position: relative;
+}
+
+.bar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  min-width: 2px;
+  box-shadow: 0 0 0 1px var(--accent-soft) inset;
+}
+
+/* ---------------------------------------------------------------- the band */
+
+/*
+ * The day, drawn to scale.
+ *
+ * This is the instrument the whole application is built around: one continuous
+ * band, ruled at the hours, showing where the time went and where the moment
+ * is now.
+ */
+.timeline {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-inset);
+  box-shadow: inset 0 1px 2px rgba(12, 18, 24, 0.07);
+}
+
+:root[data-theme='dark'] .timeline,
+:root[data-theme='system'].prefers-dark .timeline {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.timeline .block {
+  height: 100%;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  min-width: 1px;
+  transition: filter 0.1s ease;
+}
+
+.timeline .block:hover {
+  filter: brightness(1.18) saturate(1.1);
+}
+
+/* Graduations, drawn through the band the way they are on a rule. */
+.timeline-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--graduation);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Where the moment is. */
+.now-needle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* A tick head, so the needle is findable without hunting for a hairline. */
+.now-needle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -3px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--accent);
+}
+
+.now-chip {
+  position: absolute;
+  transform: translateX(-50%);
+  top: -1px;
+  font-size: 10px;
+  color: var(--accent);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.timeline-axis {
+  position: relative;
+  height: 15px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.timeline-axis span {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.timeline-axis span:first-child {
+  transform: none;
+}
+
+.timeline-axis span:last-child {
+  transform: none;
+}
+
+.block.kind-APPLICATION {
+  background: var(--app);
+}
+
+.block.kind-BROWSER_PAGE {
+  background: var(--browser);
+}
+
+.block.kind-IDLE {
+  background: var(--idle);
+}
+
+.block.kind-LOCKED {
+  background: var(--idle);
+}
+
+.block.kind-BREAK {
+  background: var(--break);
+}
+
+.block.kind-INPUT {
+  background: color-mix(in srgb, var(--app) 55%, var(--untracked));
+}
+
+.block.kind-UNTRACKED {
+  background: var(--untracked);
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.legend span::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-inline-end: 6px;
+  background: currentColor;
+}
+
+/* ------------------------------------------------------------------ overlays */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  inset-inline-end: 0;
+  bottom: 0;
+  width: 400px;
+  max-width: 90vw;
+  background: var(--surface);
+  border-inline-start: 1px solid var(--border);
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  z-index: 40;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 16, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  width: 560px;
+  max-width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.field label {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.checkbox input {
+  width: auto;
+}
+
+.lock-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--warning);
+  margin-top: 4px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.badge::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge.ok {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-soft);
+}
+
+.badge.warn {
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+}
+
+.badge.err {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+}
+
+.notice {
+  border: 1px solid var(--border);
+  border-inline-start: 2px solid var(--text-muted);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  margin-bottom: 14px;
+}
+
+.notice p {
+  margin: 3px 0 0;
+}
+
+.notice.warn {
+  border-inline-start-color: var(--warning);
+}
+
+.notice.danger {
+  border-inline-start-color: var(--danger);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.small {
+  font-size: var(--fs-small);
+}
+
+.mono {
+  font-size: var(--fs-small);
+  word-break: break-all;
+}
+
+/* File paths read better truncated than broken mid-word. */
+.mono.path {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+.toast {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  z-index: 60;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.toast.error {
+  border-color: var(--danger);
+}
+
+.toast.success {
+  border-color: var(--accent);
+}
+
+/* An empty screen is an invitation to act, not an apology. */
+.empty {
+  text-align: center;
+  padding: 44px 16px;
+  color: var(--text-muted);
+}
+
+.empty h2 {
+  color: var(--text);
+  font-size: var(--fs-title);
+  margin-bottom: 6px;
+}
+
+.feed-item {
+  display: grid;
+  /* Wide enough for "07:49 AM–07:49 AM" on one line. */
+  grid-template-columns: 132px 1fr auto;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--hairline);
+  align-items: baseline;
+  cursor: pointer;
+}
+
+.feed-item:hover {
+  background: var(--surface-2);
+}
+
+.feed-item .time {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.feed-item .title {
+  font-weight: 550;
+}
+
+.feed-item .subtitle {
+  color: var(--text-muted);
+  font-size: var(--fs-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pagination {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 0;
+  color: var(--text-muted);
+  font-size: var(--fs-small);
+}
+
+.pagination button {
+  padding: 3px 9px;
+  font-size: var(--fs-small);
+}
+
+.pagination + .feed-item {
+  border-top: 1px solid var(--border);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.week-table tbody tr.selected {
+  background: var(--accent-soft);
+}
+
+.week-detail {
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+/* A week at a glance: one column per day. */
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  align-items: end;
+  height: 90px;
+  margin-bottom: 16px;
+}
+
+.week-day {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  font-size: 11px;
+}
+
+.week-day-bar {
+  width: 100%;
+  max-width: 46px;
+  background: var(--accent);
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+}
+
+.usage-title {
+  margin: 0 0 8px;
+}
+
+.usage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.usage-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: var(--fs-small);
+}
+
+.usage-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.usage-time {
+  flex: none;
+  font-size: var(--fs-small);
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.tabs button {
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 8px 12px;
+  color: var(--text-muted);
+}
+
+.tabs button:hover:not(:disabled) {
+  background: transparent;
+  color: var(--text);
+  border-color: transparent;
+  border-bottom-color: var(--hairline);
+}
+
+.tabs button.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- charts */
+
+.donut {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.donut svg {
+  width: 150px;
+  height: 150px;
+  flex: none;
+}
+
+.donut-total {
+  fill: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  text-anchor: middle;
+  font-family: var(--font-data);
+}
+
+.donut-caption {
+  fill: var(--text-muted);
+  font-size: 8px;
+  text-anchor: middle;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.donut-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-small);
+}
+
+.donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+.donut-legend .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.donut-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bars-plot {
+  display: flex;
+  gap: 10px;
+  height: 220px;
+}
+
+.bars-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-family: var(--font-data);
+  color: var(--text-muted);
+  padding-bottom: 20px;
+  text-align: end;
+}
+
+.bars-columns {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+}
+
+.bars-column {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Bands stack from the bottom up, in the legend's order. */
+.bars-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100%;
+  border-radius: 2px 2px 0 0;
+  overflow: hidden;
+}
+
+.bars-label {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/*
+ * A clock that updates every second.
+ *
+ * Without containment the change invalidates the layout around it and the page
+ * repaints once a second — measurably, about 8% of a CPU core on a full
+ * dashboard. Tabular figures keep the width steady as the digits change.
+ */
+.clock {
+  display: inline-block;
+  min-width: 7ch;
+  contain: layout paint style;
+}
+
+/* ------------------------------------------------------- right to left */
+
+/*
+ * Persian is read right to left, and the whole interface mirrors with it —
+ * except the band.
+ *
+ * The band is a scale, not a sentence: its graduations are clock times, and
+ * a day still runs from its first hour to its last. Mirroring it would put
+ * the morning on the right and leave the hour labels reading backwards
+ * against their own axis, so it keeps its own direction whatever the text
+ * around it does.
+ */
+.timeline,
+.timeline-axis,
+.bars-plot,
+.week-days {
+  direction: ltr;
+}
+
+/*
+ * Persian is set in Vazirmatn throughout — including the measurements.
+ *
+ * The rest of the interface reads its numbers in a monospaced face, but the
+ * Persian digits (۰۱۲۳۴۵۶۷۸۹) are not in the system monospace stacks: they
+ * would fall back mid-number and the readouts would change shape halfway
+ * through. Vazirmatn has them, and its figures are tabular, so a running
+ * clock still holds its width.
+ */
+:root:lang(fa) {
+  --font-ui: 'Vazirmatn', 'Noto Naskh Arabic', 'Noto Sans Arabic', Tahoma, system-ui, sans-serif;
+  --font-data: 'Vazirmatn', 'Noto Naskh Arabic', Tahoma, system-ui, sans-serif;
+  --measure-dir: rtl;
+  /* Arabic script sits taller than Latin at the same size. */
+  --fs-body: 14px;
+  line-height: 1.7;
+}
+
+/*
+ * Measurements keep their own direction.
+ *
+ * A clock range, a page count or a duration is a Latin-ordered run. Dropped
+ * into a right-to-left sentence, the bidi algorithm reorders it —
+ * "11:04 AM–11:05 AM" comes out as "AM–11:05 AM 11:04". Isolating them keeps
+ * each measurement whole, whichever way the text around it runs.
+ */
+.clock,
+.display-time,
+.readout-value,
+.metric .value,
+.feed-item .time,
+.usage-time,
+.timeline-axis,
+.now-chip,
+.mono,
+td.numeric,
+.pagination span {
+  direction: var(--measure-dir);
+  unicode-bidi: isolate;
+}
+
+/*
+ * Names come from whatever was on screen: an English application, a Persian
+ * page title, an Arabic channel. Each is laid out by its own first strong
+ * character, so the truncation lands at the end of the name rather than the
+ * end of the box.
+ */
+.ellipsis,
+.feed-item .title,
+.feed-item .subtitle,
+.donut-label,
+.usage-name,
+.bars-label {
+  unicode-bidi: plaintext;
+}
+
+/* The needle's tick head is centred, so it does not need mirroring; the
+   legend's swatches and the rail marker do, and the logical properties above
+   already handle them. */
+
+/* Narrow windows: the rail collapses to a strip across the top. */
+@media (max-width: 720px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .sidebar nav a.active::before {
+    display: none;
+  }
+
+  .main {
+    padding: 16px 14px 40px;
+  }
+}

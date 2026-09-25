@@ -1,0 +1,19 @@
+[package]
+name = "localtrack-collector-common"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Collector interface and the LocalTrack event processing pipeline"
+
+[dependencies]
+localtrack-core = { workspace = true }
+localtrack-storage = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

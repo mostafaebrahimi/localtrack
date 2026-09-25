@@ -1,0 +1,52 @@
+[package]
+name = "localtrack-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "LocalTrack desktop application"
+
+[lib]
+name = "localtrack_desktop_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[[bin]]
+name = "localtrack"
+path = "src/main.rs"
+
+[features]
+# Tauri runs against the dev server unless this feature is on; `tauri build`
+# enables it automatically, and a plain `cargo build --release` needs
+# `--features custom-protocol` to embed the dashboard in the binary.
+custom-protocol = ["tauri/custom-protocol"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+localtrack-app = { workspace = true }
+localtrack-core = { workspace = true }
+localtrack-storage = { workspace = true }
+localtrack-export = { workspace = true }
+localtrack-collector-common = { workspace = true }
+localtrack-sync = { workspace = true }
+
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-opener = "2"
+
+# A clean stop on SIGTERM/SIGINT, so an update or a kill does not leave a hole
+# in the day.
+ctrlc = { version = "3", features = ["termination"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Needed to lift the GTK minimum size that the embedded webview imposes on the
+# undecorated timer window.
+gtk = "0.18"
+# mallopt/malloc_trim, so a day-long background process keeps a flat heap.
+libc = "0.2"

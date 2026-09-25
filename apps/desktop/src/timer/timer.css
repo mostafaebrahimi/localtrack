@@ -1,0 +1,267 @@
+/*
+ * Vazirmatn (SIL OFL 1.1) again: this window is its own page, so it loads its
+ * own copy of the face rather than inheriting the dashboard's.
+ */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('../assets/fonts/Vazirmatn-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg: #eceff1;
+  --surface: #ffffff;
+  --surface-2: #f3f5f7;
+  --border: #d5dbe0;
+  --text: #0f1519;
+  --text-muted: #5c6a75;
+  --accent: #0e7a57;
+  --break: #b07c3c;
+  --idle: #98a4ad;
+  --untracked: #ccd3d9;
+  --warning: #8a6116;
+  --font-ui: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-data: ui-monospace, 'SF Mono', SFMono-Regular, 'Cascadia Mono', 'JetBrains Mono',
+    'Roboto Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --measure-dir: ltr;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'],
+:root:not([data-theme='light']) {
+  --bg: #0b0f13;
+  --surface: #131a20;
+  --surface-2: #1a222a;
+  --border: #26313a;
+  --text: #e5eaee;
+  --text-muted: #93a1ac;
+  --accent: #4fd09a;
+  --break: #ce9a55;
+  --idle: #64717d;
+  --untracked: #2e3841;
+  --warning: #d8ab55;
+  color-scheme: dark;
+}
+
+/* The bar is read at a glance from the corner of an eye; Persian needs the
+   face that has its figures. */
+:root:lang(fa) {
+  --font-ui: 'Vazirmatn', 'Noto Naskh Arabic', Tahoma, system-ui, sans-serif;
+  --font-data: 'Vazirmatn', 'Noto Naskh Arabic', Tahoma, system-ui, sans-serif;
+  --measure-dir: rtl;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#timer {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button[hidden] {
+  display: none;
+}
+
+/* Floating timer: a slim bar designed to sit along a screen edge. */
+.timer-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 100vh;
+  padding-block: 0;
+  padding-inline: 4px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  user-select: none;
+  cursor: grab;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.timer-bar:active {
+  cursor: grabbing;
+}
+
+/* A quiet accent stripe carries the state without shouting. */
+.timer-bar::before {
+  content: '';
+  width: 3px;
+  align-self: stretch;
+  margin-block: 6px;
+  margin-inline: 0 2px;
+  border-radius: 3px;
+  background: var(--untracked);
+}
+
+.timer-bar.tone-on::before {
+  background: var(--accent);
+}
+
+.timer-bar.tone-break::before {
+  background: var(--break);
+}
+
+.timer-bar.tone-paused::before {
+  background: var(--idle);
+}
+
+/* Clocked out: a calm but insistent pulse, no window-shaking. */
+.timer-bar.nudge {
+  border-color: var(--warning);
+  animation: timer-attention 2.2s ease-in-out infinite;
+}
+
+.timer-bar.nudge .timer-activity {
+  color: var(--warning);
+  font-weight: 550;
+}
+
+.timer-bar.nudge .timer-btn.start {
+  animation: timer-start-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes timer-attention {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning) 45%, transparent);
+  }
+}
+
+@keyframes timer-start-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer-bar.nudge,
+  .timer-bar.nudge .timer-btn.start {
+    animation: none;
+  }
+}
+
+.timer-grip {
+  width: 10px;
+  height: 16px;
+  flex: none;
+  opacity: 0.35;
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 4px 5px;
+}
+
+.timer-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--untracked);
+}
+
+.timer-dot.on {
+  background: var(--accent);
+}
+
+.timer-dot.break {
+  background: var(--break);
+}
+
+.timer-dot.paused {
+  background: var(--idle);
+}
+
+/* The running clock, in the same instrument voice as the dashboard's. */
+.timer-time {
+  font-family: var(--font-data);
+  font-size: 17px;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  flex: none;
+  /* A Persian duration carries its own units as right-to-left letters. */
+  direction: var(--measure-dir);
+  unicode-bidi: isolate;
+}
+
+.timer-state {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex: none;
+  padding-inline-end: 10px;
+  border-inline-end: 1px solid var(--border);
+}
+
+.timer-activity {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.timer-actions {
+  display: flex;
+  gap: 5px;
+  flex: none;
+}
+
+.timer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  border-radius: 7px;
+}
+
+.timer-btn.icon {
+  padding: 0;
+  width: 28px;
+  justify-content: center;
+}
+
+.timer-btn.start {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}

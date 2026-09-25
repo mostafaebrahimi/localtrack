@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://localtrack.local/schemas/browser-activity.schema.json",
+  "title": "browser.activity payload",
+  "type": "object",
+  "required": ["event", "capturedAt", "browser"],
+  "additionalProperties": false,
+  "properties": {
+    "event": {
+      "enum": [
+        "activated",
+        "updated",
+        "navigated",
+        "title_changed",
+        "focused",
+        "blurred",
+        "closed",
+        "heartbeat"
+      ]
+    },
+    "capturedAt": { "type": "integer", "minimum": 1 },
+    "browser": { "type": "string", "maxLength": 64 },
+    "windowId": { "type": "integer" },
+    "tabId": { "type": "integer" },
+    "url": { "type": "string", "maxLength": 8192 },
+    "title": { "type": "string", "maxLength": 2048 },
+    "incognito": { "type": "boolean" },
+    "audible": { "type": "boolean" },
+    "focused": { "type": "boolean" }
+  }
+}
